@@ -15,7 +15,11 @@ import { z } from "zod";
 
 import type { ZAttachedByEnum } from "@karakeep/shared/types/tags";
 import { SqliteError } from "@karakeep/db";
-import { bookmarkTags, tagsOnBookmarks } from "@karakeep/db/schema";
+import {
+  bookmarkTags,
+  tagsOnBookmarks,
+  tagsOnPages,
+} from "@karakeep/db/schema";
 import { triggerSearchReindex } from "@karakeep/shared-server";
 import {
   zCreateTagRequestSchema,
@@ -182,19 +186,24 @@ export class Tag {
   }
 
   static async deleteUnused(ctx: AuthedContext): Promise<number> {
-    const res = await ctx.db
-      .delete(bookmarkTags)
-      .where(
-        and(
-          eq(bookmarkTags.userId, ctx.user.id),
-          notExists(
-            ctx.db
-              .select({ id: tagsOnBookmarks.tagId })
-              .from(tagsOnBookmarks)
-              .where(eq(tagsOnBookmarks.tagId, bookmarkTags.id)),
-          ),
+    const res = await ctx.db.delete(bookmarkTags).where(
+      and(
+        eq(bookmarkTags.userId, ctx.user.id),
+        notExists(
+          ctx.db
+            .select({ id: tagsOnBookmarks.tagId })
+            .from(tagsOnBookmarks)
+            .where(eq(tagsOnBookmarks.tagId, bookmarkTags.id)),
         ),
-      );
+        // Tags used only by pages (fork feature) are still in use.
+        notExists(
+          ctx.db
+            .select({ id: tagsOnPages.tagId })
+            .from(tagsOnPages)
+            .where(eq(tagsOnPages.tagId, bookmarkTags.id)),
+        ),
+      ),
+    );
     return res.changes;
   }
 
@@ -262,6 +271,22 @@ export class Tag {
                 ...u,
                 tagId: input.intoTagId,
               })),
+            )
+            .onConflictDoNothing()
+            .run();
+        }
+
+        // Move page tags (fork feature) over as well.
+        const unlinkedPages = trx
+          .delete(tagsOnPages)
+          .where(inArray(tagsOnPages.tagId, input.fromTagIds))
+          .returning()
+          .all();
+        if (unlinkedPages.length > 0) {
+          trx
+            .insert(tagsOnPages)
+            .values(
+              unlinkedPages.map((u) => ({ ...u, tagId: input.intoTagId })),
             )
             .onConflictDoNothing()
             .run();

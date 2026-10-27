@@ -69,6 +69,14 @@ function normalizedTagKey(name: string) {
   return name.toLowerCase().replace(/[ \-_]/g, "");
 }
 
+function normalizeTopic(topic: string | null | undefined) {
+  if (topic === undefined) {
+    return undefined;
+  }
+  const t = topic?.trim();
+  return t ? t : null;
+}
+
 function escapeLike(s: string) {
   return s.replace(/[\\%_]/g, (c) => `\\${c}`);
 }
@@ -129,7 +137,7 @@ export class Page {
           description: input.description ?? null,
           content: input.content ?? "",
           note: input.note ?? null,
-          topic: input.topic ?? null,
+          topic: normalizeTopic(input.topic) ?? null,
           sourceUrl: input.sourceUrl ?? null,
           favourited: input.favourited ?? false,
           archived: input.archived ?? false,
@@ -169,7 +177,7 @@ export class Page {
         description: input.description,
         content: input.content,
         note: input.note,
-        topic: input.topic,
+        topic: normalizeTopic(input.topic),
         sourceUrl: input.sourceUrl,
         favourited: input.favourited,
         archived: input.archived,

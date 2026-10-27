@@ -784,6 +784,170 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/pages": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get all pages
+     * @description Retrieve a paginated list of pages (without their markdown content), newest first by default. Supports filtering by topic, tag, list, favourited/archived status and a text query.
+     */
+    get: operations["listPages"];
+    put?: never;
+    /**
+     * Create a new page
+     * @description Create a new page. The cover image can be an external URL (stored and hotlinked as-is), base64 image bytes or the id of an asset uploaded via POST /assets.
+     */
+    post: operations["createPage"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/pages/search": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Search pages
+     * @description Search pages with a case-insensitive substring match on title, description, content and topic. Accepts the same filters as listing pages.
+     */
+    get: operations["searchPages"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/pages/topics": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get page topics
+     * @description List the distinct page topics with the number of pages in each, most used first.
+     */
+    get: operations["listPageTopics"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/pages/{pageId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get a single page
+     * @description Retrieve a single page, including its markdown content and tags.
+     */
+    get: operations["getPage"];
+    put?: never;
+    post?: never;
+    /**
+     * Delete a page
+     * @description Delete a page and its uploaded cover image, if any.
+     */
+    delete: operations["deletePage"];
+    options?: never;
+    head?: never;
+    /**
+     * Update a page
+     * @description Update a page. Only the provided fields are changed. Pass `image: null` to remove the cover image.
+     */
+    patch: operations["updatePage"];
+    trace?: never;
+  };
+  "/pages/{pageId}/tags": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * Replace the tags of a page
+     * @description Replace the page's tags with the given tag names. Missing tags are created.
+     */
+    put: operations["setPageTags"];
+    /**
+     * Attach tags to a page
+     * @description Attach tags to a page, by id or name. Tags that don't exist yet are created.
+     */
+    post: operations["attachTagsToPage"];
+    /**
+     * Detach tags from a page
+     * @description Detach tags from a page, by id or name.
+     */
+    delete: operations["detachTagsFromPage"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/pages/{pageId}/lists": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get the lists of a page
+     * @description Get the lists that a page belongs to.
+     */
+    get: operations["getPageLists"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/pages/{pageId}/lists/{listId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * Add a page to a list
+     * @description Add a page to a manual list. Idempotent — adding a page that's already in the list has no effect.
+     */
+    put: operations["addPageToList"];
+    post?: never;
+    /**
+     * Remove a page from a list
+     * @description Remove a page from a list.
+     */
+    delete: operations["removePageFromList"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -823,6 +987,11 @@ export interface components {
      * @example ieidlxygmwj87oxz5hxttoc8
      */
     FeedId: string;
+    /**
+     * @description The unique identifier of the page.
+     * @example ieidlxygmwj87oxz5hxttoc8
+     */
+    PageId: string;
     PaginatedBookmarks: {
       bookmarks: components["schemas"]["Bookmark"][];
       /** @description Cursor for the next page, or null if no more results. */
@@ -1064,6 +1233,51 @@ export interface components {
        */
       lastSuccessfulFetchAt: string | null;
     };
+    PageSummary: {
+      id: string;
+      title: string;
+      description: string | null;
+      note: string | null;
+      topic: string | null;
+      imageUrl: string | null;
+      imageAssetId: string | null;
+      sourceUrl: string | null;
+      favourited: boolean;
+      archived: boolean;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      modifiedAt: string | null;
+      tags: {
+        id: string;
+        name: string;
+        /** @enum {string} */
+        attachedBy: "ai" | "human";
+      }[];
+    };
+    Page: {
+      id: string;
+      title: string;
+      description: string | null;
+      content: string;
+      note: string | null;
+      topic: string | null;
+      imageUrl: string | null;
+      imageAssetId: string | null;
+      sourceUrl: string | null;
+      favourited: boolean;
+      archived: boolean;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      modifiedAt: string | null;
+      tags: {
+        id: string;
+        name: string;
+        /** @enum {string} */
+        attachedBy: "ai" | "human";
+      }[];
+    };
   };
   responses: never;
   parameters: {
@@ -1081,6 +1295,8 @@ export interface components {
     BackupId: components["schemas"]["BackupId"];
     /** @description The unique identifier of the feed. */
     FeedId: components["schemas"]["FeedId"];
+    /** @description The unique identifier of the page. */
+    PageId: components["schemas"]["PageId"];
   };
   requestBodies: never;
   headers: never;
@@ -2361,7 +2577,7 @@ export interface operations {
         sort?: "name" | "usage" | "relevance";
         attachedBy?: "ai" | "human" | "none";
         cursor?: string;
-        limit?: number | null;
+        limit?: number;
       };
       header?: never;
       path?: never;
@@ -3777,6 +3993,676 @@ export interface operations {
         };
       };
       /** @description Feed not found. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
+    };
+  };
+  listPages: {
+    parameters: {
+      query?: {
+        /** @description Only pages with this topic (case-insensitive). */
+        topic?: string;
+        /** @description Only pages with this tag name. */
+        tag?: string;
+        /** @description Only pages with this tag id. */
+        tagId?: string;
+        /** @description Only pages in this list. */
+        listId?: string;
+        /** @description Filter by favourited status. */
+        favourited?: boolean;
+        /** @description Filter by archived status. When omitted, archived pages are hidden unless includeArchived is true. */
+        archived?: boolean;
+        /** @description Include archived pages when `archived` is not set. */
+        includeArchived?: boolean;
+        /** @description Sort by creation date. Defaults to 'desc' (newest first). */
+        sortOrder?: "desc" | "asc";
+        /** @description Case-insensitive substring match on title, description, content and topic. */
+        q?: string;
+        /** @description Maximum number of items to return per page. */
+        limit?: number;
+        /** @description Cursor from a previous response to fetch the next page. */
+        cursor?: components["schemas"]["Cursor"];
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description A paginated list of pages. */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            pages: components["schemas"]["PageSummary"][];
+            /** @description Cursor for the next page, or null if no more results. */
+            nextCursor: string | null;
+          };
+        };
+      };
+      /** @description Unauthorized — the Bearer token is missing, invalid, or expired. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "text/plain": string;
+        };
+      };
+    };
+  };
+  createPage: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description The page to create. */
+    requestBody?: {
+      content: {
+        "application/json": {
+          title: string;
+          description?: string;
+          content?: string;
+          note?: string;
+          topic?: string;
+          /** Format: uri */
+          sourceUrl?: string;
+          tags?: string[];
+          image?:
+            | {
+                /** Format: uri */
+                url: string;
+              }
+            | {
+                base64: string;
+                contentType: string;
+                fileName?: string;
+              }
+            | {
+                assetId: string;
+              };
+          favourited?: boolean;
+          archived?: boolean;
+        };
+      };
+    };
+    responses: {
+      /** @description The created page. */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Page"];
+        };
+      };
+      /** @description Bad request — invalid input or unsupported image. */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
+      /** @description Unauthorized — the Bearer token is missing, invalid, or expired. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "text/plain": string;
+        };
+      };
+    };
+  };
+  searchPages: {
+    parameters: {
+      query: {
+        /** @description Only pages with this topic (case-insensitive). */
+        topic?: string;
+        /** @description Only pages with this tag name. */
+        tag?: string;
+        /** @description Only pages with this tag id. */
+        tagId?: string;
+        /** @description Only pages in this list. */
+        listId?: string;
+        /** @description Filter by favourited status. */
+        favourited?: boolean;
+        /** @description Filter by archived status. When omitted, archived pages are hidden unless includeArchived is true. */
+        archived?: boolean;
+        /** @description Include archived pages when `archived` is not set. */
+        includeArchived?: boolean;
+        /** @description Sort by creation date. Defaults to 'desc' (newest first). */
+        sortOrder?: "desc" | "asc";
+        /** @description The text to search for. */
+        q: string;
+        /** @description Maximum number of results (default 20, max 100). */
+        limit?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The matching pages. */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            pages: components["schemas"]["PageSummary"][];
+          };
+        };
+      };
+      /** @description Unauthorized — the Bearer token is missing, invalid, or expired. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "text/plain": string;
+        };
+      };
+    };
+  };
+  listPageTopics: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The page topics. */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            topics: {
+              topic: string;
+              count: number;
+            }[];
+          };
+        };
+      };
+      /** @description Unauthorized — the Bearer token is missing, invalid, or expired. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "text/plain": string;
+        };
+      };
+    };
+  };
+  getPage: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description The unique identifier of the page. */
+        pageId: components["parameters"]["PageId"];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The requested page. */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Page"];
+        };
+      };
+      /** @description Unauthorized — the Bearer token is missing, invalid, or expired. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "text/plain": string;
+        };
+      };
+      /** @description Page not found. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
+    };
+  };
+  deletePage: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description The unique identifier of the page. */
+        pageId: components["parameters"]["PageId"];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No content — the page was deleted successfully. */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Unauthorized — the Bearer token is missing, invalid, or expired. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "text/plain": string;
+        };
+      };
+      /** @description Page not found. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
+    };
+  };
+  updatePage: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description The unique identifier of the page. */
+        pageId: components["parameters"]["PageId"];
+      };
+      cookie?: never;
+    };
+    /** @description The fields to update. */
+    requestBody?: {
+      content: {
+        "application/json": {
+          title?: string;
+          description?: string | null;
+          content?: string;
+          note?: string | null;
+          topic?: string | null;
+          /** Format: uri */
+          sourceUrl?: string | null;
+          favourited?: boolean;
+          archived?: boolean;
+          image?:
+            | {
+                /** Format: uri */
+                url: string;
+              }
+            | {
+                base64: string;
+                contentType: string;
+                fileName?: string;
+              }
+            | {
+                assetId: string;
+              }
+            | unknown;
+        };
+      };
+    };
+    responses: {
+      /** @description The updated page. */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Page"];
+        };
+      };
+      /** @description Unauthorized — the Bearer token is missing, invalid, or expired. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "text/plain": string;
+        };
+      };
+      /** @description Page not found. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
+    };
+  };
+  setPageTags: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description The unique identifier of the page. */
+        pageId: components["parameters"]["PageId"];
+      };
+      cookie?: never;
+    };
+    /** @description The new set of tag names. */
+    requestBody?: {
+      content: {
+        "application/json": {
+          tags: string[];
+        };
+      };
+    };
+    responses: {
+      /** @description The updated page. */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Page"];
+        };
+      };
+      /** @description Unauthorized — the Bearer token is missing, invalid, or expired. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "text/plain": string;
+        };
+      };
+      /** @description Page not found. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
+    };
+  };
+  attachTagsToPage: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description The unique identifier of the page. */
+        pageId: components["parameters"]["PageId"];
+      };
+      cookie?: never;
+    };
+    /** @description The tags to attach. */
+    requestBody?: {
+      content: {
+        "application/json": {
+          tags: {
+            tagId?: string;
+            tagName?: string;
+            /**
+             * @default human
+             * @enum {string}
+             */
+            attachedBy?: "ai" | "human";
+          }[];
+        };
+      };
+    };
+    responses: {
+      /** @description The ids of the attached tags. */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            attached: string[];
+          };
+        };
+      };
+      /** @description Unauthorized — the Bearer token is missing, invalid, or expired. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "text/plain": string;
+        };
+      };
+      /** @description Page not found. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
+    };
+  };
+  detachTagsFromPage: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description The unique identifier of the page. */
+        pageId: components["parameters"]["PageId"];
+      };
+      cookie?: never;
+    };
+    /** @description The tags to detach. */
+    requestBody?: {
+      content: {
+        "application/json": {
+          tags: {
+            tagId?: string;
+            tagName?: string;
+            /**
+             * @default human
+             * @enum {string}
+             */
+            attachedBy?: "ai" | "human";
+          }[];
+        };
+      };
+    };
+    responses: {
+      /** @description The ids of the detached tags. */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            detached: string[];
+          };
+        };
+      };
+      /** @description Unauthorized — the Bearer token is missing, invalid, or expired. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "text/plain": string;
+        };
+      };
+      /** @description Page not found. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
+    };
+  };
+  getPageLists: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description The unique identifier of the page. */
+        pageId: components["parameters"]["PageId"];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The lists containing the page. */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            lists: {
+              id: string;
+              name: string;
+              icon: string;
+            }[];
+          };
+        };
+      };
+      /** @description Unauthorized — the Bearer token is missing, invalid, or expired. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "text/plain": string;
+        };
+      };
+      /** @description Page not found. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
+    };
+  };
+  addPageToList: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description The unique identifier of the page. */
+        pageId: components["parameters"]["PageId"];
+        /** @description The unique identifier of the list. */
+        listId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No content — the page was added to the list. */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description The list is not a manual list. */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
+      /** @description Unauthorized — the Bearer token is missing, invalid, or expired. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "text/plain": string;
+        };
+      };
+      /** @description Page or list not found. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
+    };
+  };
+  removePageFromList: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description The unique identifier of the page. */
+        pageId: components["parameters"]["PageId"];
+        /** @description The unique identifier of the list. */
+        listId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No content — the page was removed from the list. */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description The page is not in the list. */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Error"];
+        };
+      };
+      /** @description Unauthorized — the Bearer token is missing, invalid, or expired. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "text/plain": string;
+        };
+      };
+      /** @description Page not found. */
       404: {
         headers: {
           [name: string]: unknown;

@@ -20,12 +20,8 @@ const zHttpUrl = z
   .max(2048)
   .refine((u) => /^https?:\/\//i.test(u), "Only http(s) URLs are allowed");
 
-// An empty / whitespace-only topic means "no topic".
-const zTopic = z
-  .string()
-  .trim()
-  .max(MAX_PAGE_TOPIC_LENGTH)
-  .transform((t) => (t.length > 0 ? t : null));
+// An empty / whitespace-only topic means "no topic" (normalized server side).
+const zTopic = z.string().trim().max(MAX_PAGE_TOPIC_LENGTH);
 
 /**
  * How a page's cover image is provided:

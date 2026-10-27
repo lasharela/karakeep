@@ -15,6 +15,7 @@ import { registry as commonRegistry } from "./lib/common";
 import { registry as feedsRegistry } from "./lib/feeds";
 import { registry as highlightsRegistry } from "./lib/highlights";
 import { registry as listsRegistry } from "./lib/lists";
+import { registry as pagesRegistry } from "./lib/pages";
 import { registry as tagsRegistry } from "./lib/tags";
 import { registry as userRegistry } from "./lib/users";
 
@@ -30,6 +31,7 @@ function getOpenApiDocumentation() {
     adminRegistry,
     backupsRegistry,
     feedsRegistry,
+    pagesRegistry,
   ]);
 
   const generator = new OpenApiGeneratorV3(registry.definitions);
@@ -101,6 +103,11 @@ function getOpenApiDocumentation() {
         name: "Feeds",
         description:
           "Manage RSS feed subscriptions. Create, update, delete, and trigger fetches for RSS feeds that automatically import bookmarks.",
+      },
+      {
+        name: "Pages",
+        description:
+          "Manage pages — standalone markdown documents with a cover image, topic, tags and list membership.",
       },
     ],
     servers: [

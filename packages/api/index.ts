@@ -18,6 +18,7 @@ import health from "./routes/health";
 import highlights from "./routes/highlights";
 import lists from "./routes/lists";
 import metrics, { registerMetrics } from "./routes/metrics";
+import pages from "./routes/pages";
 import publicRoute from "./routes/public";
 import rss from "./routes/rss";
 import tags from "./routes/tags";
@@ -40,7 +41,8 @@ const v1 = new Hono<{
   .route("/admin", admin)
   .route("/rss", rss)
   .route("/backups", backups)
-  .route("/feeds", feeds);
+  .route("/feeds", feeds)
+  .route("/pages", pages);
 
 const app = new Hono<{
   Variables: {

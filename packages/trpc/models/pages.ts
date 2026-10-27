@@ -11,6 +11,7 @@ import {
   inArray,
   isNotNull,
   lt,
+  ne,
   or,
   sql,
   SQL,
@@ -137,7 +138,9 @@ export class Page {
           description: input.description ?? null,
           content: input.content ?? "",
           note: input.note ?? null,
-          topic: normalizeTopic(input.topic) ?? null,
+          topic:
+            (await Page.canonicalTopic(ctx, normalizeTopic(input.topic))) ??
+            null,
           sourceUrl: input.sourceUrl ?? null,
           favourited: input.favourited ?? false,
           archived: input.archived ?? false,
@@ -177,7 +180,11 @@ export class Page {
         description: input.description,
         content: input.content,
         note: input.note,
-        topic: normalizeTopic(input.topic),
+        topic: await Page.canonicalTopic(
+          this.ctx,
+          normalizeTopic(input.topic),
+          this.page.id,
+        ),
         sourceUrl: input.sourceUrl,
         favourited: input.favourited,
         archived: input.archived,
@@ -478,13 +485,43 @@ export class Page {
     return { pages: summaries, nextCursor };
   }
 
+  /**
+   * Topics are case-insensitive: reuse the spelling of an existing topic so
+   * "Recipes" and "recipes" don't end up as two topics.
+   */
+  private static async canonicalTopic<T extends string | null | undefined>(
+    ctx: AuthedContext,
+    topic: T,
+    excludePageId?: string,
+  ): Promise<T | string> {
+    if (!topic) {
+      return topic;
+    }
+    const existing = await ctx.db
+      .select({ topic: pages.topic })
+      .from(pages)
+      .where(
+        and(
+          eq(pages.userId, ctx.user.id),
+          sql`lower(${pages.topic}) = lower(${topic})`,
+          excludePageId ? ne(pages.id, excludePageId) : undefined,
+        ),
+      )
+      .limit(1);
+    return existing[0]?.topic ?? topic;
+  }
+
   static async listTopics(ctx: AuthedContext) {
     const rows = await ctx.db
-      .select({ topic: pages.topic, count: count() })
+      .select({
+        topic: sql<string | null>`min(${pages.topic})`,
+        count: count(),
+      })
       .from(pages)
       .where(and(eq(pages.userId, ctx.user.id), isNotNull(pages.topic)))
-      .groupBy(pages.topic)
-      .orderBy(desc(count()), asc(pages.topic));
+      // Topics are matched case-insensitively.
+      .groupBy(sql`lower(${pages.topic})`)
+      .orderBy(desc(count()), asc(sql`lower(${pages.topic})`));
     return rows.flatMap((r) =>
       r.topic ? [{ topic: r.topic, count: r.count }] : [],
     );

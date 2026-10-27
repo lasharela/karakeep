@@ -364,6 +364,22 @@ describe("Pages Routes", () => {
         { topic: "notes", count: 1 },
       ]);
     });
+
+    test<CustomTestContext>("topics are case-insensitive and keep the first spelling", async ({
+      apiCallers,
+    }) => {
+      const api = apiCallers[0].pages;
+      await api.create({ title: "1", topic: "Recipes" });
+      const second = await api.create({ title: "2", topic: "recipes" });
+      expect(second.topic).toBe("Recipes");
+      const third = await api.create({ title: "3" });
+      const updated = await api.update({ pageId: third.id, topic: "RECIPES" });
+      expect(updated.topic).toBe("Recipes");
+
+      expect((await api.listTopics()).topics).toEqual([
+        { topic: "Recipes", count: 3 },
+      ]);
+    });
   });
 
   describe("images", () => {

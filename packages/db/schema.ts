@@ -363,6 +363,8 @@ export const enum AssetTypes {
   USER_UPLOADED = "userUploaded",
   AVATAR = "avatar",
   BACKUP = "backup",
+  // Cover image of a page (fork feature). Not attached to a bookmark.
+  PAGE_IMAGE = "pageImage",
   UNKNOWN = "unknown",
 }
 
@@ -385,6 +387,7 @@ export const assets = sqliteTable(
         AssetTypes.USER_UPLOADED,
         AssetTypes.AVATAR,
         AssetTypes.BACKUP,
+        AssetTypes.PAGE_IMAGE,
         AssetTypes.UNKNOWN,
       ],
     }).notNull(),
@@ -1087,6 +1090,84 @@ export const importStagingBookmarks = sqliteTable(
   ],
 );
 
+// Pages (fork feature): standalone, self-authored markdown documents. They
+// share the tag vocabulary and the manual lists with bookmarks.
+export const pages = sqliteTable(
+  "pages",
+  {
+    id: text("id")
+      .notNull()
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    description: text("description"),
+    content: text("content").notNull().default(""),
+    note: text("note"),
+    topic: text("topic"),
+    // Hotlinked external image. Takes precedence over imageAssetId.
+    imageUrl: text("imageUrl"),
+    // An uploaded image stored as a `pageImage` asset.
+    imageAssetId: text("imageAssetId").references(() => assets.id, {
+      onDelete: "set null",
+    }),
+    sourceUrl: text("sourceUrl"),
+    archived: integer("archived", { mode: "boolean" }).notNull().default(false),
+    favourited: integer("favourited", { mode: "boolean" })
+      .notNull()
+      .default(false),
+    createdAt: createdAtField(),
+    modifiedAt: modifiedAtField(),
+  },
+  (p) => [
+    index("pages_userId_topic_idx").on(p.userId, p.topic),
+    index("pages_userId_createdAt_id_idx").on(p.userId, p.createdAt, p.id),
+  ],
+);
+
+export const tagsOnPages = sqliteTable(
+  "tagsOnPages",
+  {
+    pageId: text("pageId")
+      .notNull()
+      .references(() => pages.id, { onDelete: "cascade" }),
+    tagId: text("tagId")
+      .notNull()
+      .references(() => bookmarkTags.id, { onDelete: "cascade" }),
+    attachedAt: integer("attachedAt", { mode: "timestamp" }).$defaultFn(
+      () => new Date(),
+    ),
+    attachedBy: text("attachedBy", { enum: ["ai", "human"] })
+      .notNull()
+      .default("human"),
+  },
+  (tb) => [
+    primaryKey({ columns: [tb.pageId, tb.tagId] }),
+    index("tagsOnPages_tagId_pageId_idx").on(tb.tagId, tb.pageId),
+  ],
+);
+
+export const pagesInLists = sqliteTable(
+  "pagesInLists",
+  {
+    pageId: text("pageId")
+      .notNull()
+      .references(() => pages.id, { onDelete: "cascade" }),
+    listId: text("listId")
+      .notNull()
+      .references(() => bookmarkLists.id, { onDelete: "cascade" }),
+    addedAt: integer("addedAt", { mode: "timestamp" }).$defaultFn(
+      () => new Date(),
+    ),
+  },
+  (tb) => [
+    primaryKey({ columns: [tb.pageId, tb.listId] }),
+    index("pagesInLists_listId_pageId_idx").on(tb.listId, tb.pageId),
+  ],
+);
+
 // Relations
 
 export const userRelations = relations(users, ({ many, one }) => ({
@@ -1356,3 +1437,38 @@ export const userReadingProgressRelations = relations(
     }),
   }),
 );
+
+export const pagesRelations = relations(pages, ({ many, one }) => ({
+  user: one(users, {
+    fields: [pages.userId],
+    references: [users.id],
+  }),
+  imageAsset: one(assets, {
+    fields: [pages.imageAssetId],
+    references: [assets.id],
+  }),
+  tagsOnPages: many(tagsOnPages),
+  pagesInLists: many(pagesInLists),
+}));
+
+export const tagsOnPagesRelations = relations(tagsOnPages, ({ one }) => ({
+  tag: one(bookmarkTags, {
+    fields: [tagsOnPages.tagId],
+    references: [bookmarkTags.id],
+  }),
+  page: one(pages, {
+    fields: [tagsOnPages.pageId],
+    references: [pages.id],
+  }),
+}));
+
+export const pagesInListsRelations = relations(pagesInLists, ({ one }) => ({
+  page: one(pages, {
+    fields: [pagesInLists.pageId],
+    references: [pages.id],
+  }),
+  list: one(bookmarkLists, {
+    fields: [pagesInLists.listId],
+    references: [bookmarkLists.id],
+  }),
+}));

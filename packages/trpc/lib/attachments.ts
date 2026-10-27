@@ -20,6 +20,7 @@ export function mapDBAssetTypeToUserType(assetType: AssetTypes): ZAssetType {
     [AssetTypes.USER_UPLOADED]: "userUploaded",
     [AssetTypes.AVATAR]: "avatar",
     [AssetTypes.BACKUP]: "unknown", // Backups are not displayed as regular assets
+    [AssetTypes.PAGE_IMAGE]: "unknown", // Page covers are managed by the pages router
     [AssetTypes.UNKNOWN]: "bannerImage",
   };
   return map[assetType];

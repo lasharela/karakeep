@@ -5,7 +5,7 @@ import { karakeepClient, registerTool } from "./shared";
 import { toMcpToolError } from "./utils";
 
 export const getAssetInputSchema = {
-  assetId: z.string().min(1).describe("The ID of the asset to retrieve."),
+  assetId: z.string().trim().min(1).describe("The ID of the asset to retrieve."),
 };
 
 export async function getAssetHandler({

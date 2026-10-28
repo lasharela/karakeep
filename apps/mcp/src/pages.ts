@@ -97,7 +97,7 @@ const listFiltersSchema = {
     .optional()
     .describe(`Only pages with this topic (case-insensitive).`),
   tag: z.string().optional().describe(`Only pages with this tag name.`),
-  listId: z.string().optional().describe(`Only pages in this list.`),
+  listId: z.string().trim().optional().describe(`Only pages in this list.`),
   favourited: z
     .boolean()
     .optional()
@@ -186,7 +186,7 @@ registerTool(
 // get-page
 
 export const getPageInputSchema = {
-  pageId: z.string().min(1).describe(`The id of the page.`),
+  pageId: z.string().trim().min(1).describe(`The id of the page.`),
 };
 
 export async function getPageHandler({
@@ -320,7 +320,7 @@ registerTool(
 // update-page
 
 export const updatePageInputSchema = {
-  pageId: z.string().min(1).describe(`The id of the page to update.`),
+  pageId: z.string().trim().min(1).describe(`The id of the page to update.`),
   title: z.string().min(1).max(500).optional().describe(`New title.`),
   description: z.string().max(2000).optional().describe(`New description.`),
   content: z
@@ -391,7 +391,7 @@ registerTool(
 // set-page-tags
 
 export const setPageTagsInputSchema = {
-  pageId: z.string().min(1).describe(`The id of the page.`),
+  pageId: z.string().trim().min(1).describe(`The id of the page.`),
   tags: z
     .array(z.string())
     .describe(`The complete new set of tag names. Missing tags are created.`),
@@ -428,7 +428,7 @@ registerTool(
 // attach-tag-to-page / detach-tag-from-page
 
 export const pageTagsInputSchema = {
-  pageId: z.string().min(1).describe(`The id of the page.`),
+  pageId: z.string().trim().min(1).describe(`The id of the page.`),
   tags: z.array(z.string()).min(1).describe(`The tag names.`),
 };
 
@@ -487,7 +487,7 @@ registerTool(
 // add-page-to-list / remove-page-from-list
 
 export const pageListInputSchema = {
-  pageId: z.string().min(1).describe(`The id of the page.`),
+  pageId: z.string().trim().min(1).describe(`The id of the page.`),
   listId: z
     .string()
     .min(1)

@@ -14,7 +14,7 @@ registerTool(
   {
     description: `Attach a tag to a bookmark.`,
     inputSchema: z.object({
-      bookmarkId: z.string().describe(`The bookmarkId to attach the tag to.`),
+      bookmarkId: z.string().trim().describe(`The bookmarkId to attach the tag to.`),
       tagsToAttach: z.array(z.string()).describe(`The tag names to attach.`),
     }),
   },
@@ -48,7 +48,7 @@ registerTool(
   {
     description: `Detach a tag from a bookmark.`,
     inputSchema: z.object({
-      bookmarkId: z.string().describe(`The bookmarkId to detach the tag from.`),
+      bookmarkId: z.string().trim().describe(`The bookmarkId to detach the tag from.`),
       tagsToDetach: z.array(z.string()).describe(`The tag names to detach.`),
     }),
   },
@@ -140,7 +140,7 @@ registerTool(
 );
 
 export const getTagInputSchema = {
-  tagId: z.string().min(1).describe(`The id of the tag to retrieve.`),
+  tagId: z.string().trim().min(1).describe(`The id of the tag to retrieve.`),
 };
 
 export async function getTagHandler({
@@ -169,7 +169,7 @@ registerTool(
 );
 
 export const updateTagInputSchema = {
-  tagId: z.string().min(1).describe(`The id of the tag to update.`),
+  tagId: z.string().trim().min(1).describe(`The id of the tag to update.`),
   name: z
     .string()
     .min(1)
@@ -209,7 +209,7 @@ registerTool(
 );
 
 export const deleteTagInputSchema = {
-  tagId: z.string().min(1).describe(`The id of the tag to delete.`),
+  tagId: z.string().trim().min(1).describe(`The id of the tag to delete.`),
 };
 
 export async function deleteTagHandler({

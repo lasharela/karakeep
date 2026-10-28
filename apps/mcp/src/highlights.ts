@@ -189,7 +189,7 @@ registerTool(
 );
 
 export const updateHighlightInputSchema = {
-  highlightId: z.string().min(1).describe(`The id of the highlight to update.`),
+  highlightId: z.string().trim().min(1).describe(`The id of the highlight to update.`),
   color: highlightColorSchema.optional().describe(`New highlight color.`),
   note: z
     .string()
@@ -235,7 +235,7 @@ registerTool(
 );
 
 export const deleteHighlightInputSchema = {
-  highlightId: z.string().min(1).describe(`The id of the highlight to delete.`),
+  highlightId: z.string().trim().min(1).describe(`The id of the highlight to delete.`),
 };
 
 export async function deleteHighlightHandler({

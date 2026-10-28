@@ -103,7 +103,7 @@ registerTool(
   {
     description: `Get a bookmark by id.`,
     inputSchema: z.object({
-      bookmarkId: z.string().describe(`The bookmarkId to get.`),
+      bookmarkId: z.string().trim().describe(`The bookmarkId to get.`),
     }),
   },
   async ({ bookmarkId }): Promise<CallToolResult> => {
@@ -222,7 +222,7 @@ registerTool(
   {
     description: `Update fields on an existing bookmark. Only the fields you pass are modified; omitted fields stay unchanged. Returns the updated bookmark.`,
     inputSchema: z.object({
-      bookmarkId: z.string().describe(`The bookmarkId to update.`),
+      bookmarkId: z.string().trim().describe(`The bookmarkId to update.`),
       title: z
         .string()
         .nullable()
@@ -302,7 +302,7 @@ registerTool(
 );
 
 export const getBookmarkContentInputSchema = {
-  bookmarkId: z.string().describe(`The bookmarkId to get content for.`),
+  bookmarkId: z.string().trim().describe(`The bookmarkId to get content for.`),
 };
 
 export async function getBookmarkContentHandler({
@@ -348,7 +348,7 @@ registerTool(
 );
 
 export const deleteBookmarkInputSchema = {
-  bookmarkId: z.string().min(1).describe(`The id of the bookmark to delete.`),
+  bookmarkId: z.string().trim().min(1).describe(`The id of the bookmark to delete.`),
 };
 
 export async function deleteBookmarkHandler({

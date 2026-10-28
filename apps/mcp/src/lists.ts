@@ -36,7 +36,7 @@ registerTool(
 );
 
 export const getListInputSchema = {
-  listId: z.string().min(1).describe(`The id of the list to retrieve.`),
+  listId: z.string().trim().min(1).describe(`The id of the list to retrieve.`),
 };
 
 export async function getListHandler({
@@ -91,7 +91,7 @@ const updateListFields = {
 };
 
 export const updateListInputSchema = {
-  listId: z.string().min(1).describe(`The id of the list to update.`),
+  listId: z.string().trim().min(1).describe(`The id of the list to update.`),
   ...updateListFields,
 };
 
@@ -147,7 +147,7 @@ registerTool(
 );
 
 export const deleteListInputSchema = {
-  listId: z.string().min(1).describe(`The id of the list to delete.`),
+  listId: z.string().trim().min(1).describe(`The id of the list to delete.`),
 };
 
 export async function deleteListHandler({
@@ -193,8 +193,8 @@ registerTool(
   {
     description: `Add a bookmark to a list.`,
     inputSchema: z.object({
-      listId: z.string().describe(`The listId to add the bookmark to.`),
-      bookmarkId: z.string().describe(`The bookmarkId to add.`),
+      listId: z.string().trim().describe(`The listId to add the bookmark to.`),
+      bookmarkId: z.string().trim().describe(`The bookmarkId to add.`),
     }),
   },
   async ({ listId, bookmarkId }): Promise<CallToolResult> => {
@@ -228,8 +228,8 @@ registerTool(
   {
     description: `Remove a bookmark from a list.`,
     inputSchema: z.object({
-      listId: z.string().describe(`The listId to remove the bookmark from.`),
-      bookmarkId: z.string().describe(`The bookmarkId to remove.`),
+      listId: z.string().trim().describe(`The listId to remove the bookmark from.`),
+      bookmarkId: z.string().trim().describe(`The bookmarkId to remove.`),
     }),
   },
   async ({ listId, bookmarkId }): Promise<CallToolResult> => {

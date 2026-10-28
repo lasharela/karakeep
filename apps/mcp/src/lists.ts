@@ -228,7 +228,10 @@ registerTool(
   {
     description: `Remove a bookmark from a list.`,
     inputSchema: z.object({
-      listId: z.string().trim().describe(`The listId to remove the bookmark from.`),
+      listId: z
+        .string()
+        .trim()
+        .describe(`The listId to remove the bookmark from.`),
       bookmarkId: z.string().trim().describe(`The bookmarkId to remove.`),
     }),
   },

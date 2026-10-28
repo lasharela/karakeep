@@ -14,7 +14,10 @@ registerTool(
   {
     description: `Attach a tag to a bookmark.`,
     inputSchema: z.object({
-      bookmarkId: z.string().trim().describe(`The bookmarkId to attach the tag to.`),
+      bookmarkId: z
+        .string()
+        .trim()
+        .describe(`The bookmarkId to attach the tag to.`),
       tagsToAttach: z.array(z.string()).describe(`The tag names to attach.`),
     }),
   },
@@ -48,7 +51,10 @@ registerTool(
   {
     description: `Detach a tag from a bookmark.`,
     inputSchema: z.object({
-      bookmarkId: z.string().trim().describe(`The bookmarkId to detach the tag from.`),
+      bookmarkId: z
+        .string()
+        .trim()
+        .describe(`The bookmarkId to detach the tag from.`),
       tagsToDetach: z.array(z.string()).describe(`The tag names to detach.`),
     }),
   },

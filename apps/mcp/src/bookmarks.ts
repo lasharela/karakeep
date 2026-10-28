@@ -348,7 +348,11 @@ registerTool(
 );
 
 export const deleteBookmarkInputSchema = {
-  bookmarkId: z.string().trim().min(1).describe(`The id of the bookmark to delete.`),
+  bookmarkId: z
+    .string()
+    .trim()
+    .min(1)
+    .describe(`The id of the bookmark to delete.`),
 };
 
 export async function deleteBookmarkHandler({
